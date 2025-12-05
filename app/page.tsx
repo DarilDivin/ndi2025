@@ -1,5 +1,6 @@
 'use client';
 
+import QuizSection from '@/components/QuizSection';
 import StoryScroller from '@/components/StoryScroller';
 import dynamic from 'next/dynamic';
 
@@ -85,6 +86,10 @@ export default function Home() {
       </div>
       <div className="relative z-20">
         <StoryScroller />
+      </div>
+      {/* Quiz */}
+      <div className="relative z-30">
+         <QuizSection />
       </div>
     </div>
   );
