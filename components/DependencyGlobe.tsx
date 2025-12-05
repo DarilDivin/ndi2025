@@ -10,7 +10,7 @@ const DATA_ARCS = [
   { start: [48.85, 2.35], end: [38.90, -77.03] }, // Paris -> Washington
   { start: [52.52, 13.40], end: [38.90, -77.03] }, // Berlin -> Washington
   { start: [40.41, -3.70], end: [38.90, -77.03] }, // Madrid -> Washington
-  { start: [51.50, -0.12], end: [37.77, -122.41] }, // Londres -> Silicon Valley
+//   { start: [51.50, -0.12], end: [37.77, -122.41] }, // Londres -> Silicon Valley
   { start: [41.90, 12.49], end: [40.71, -74.00] }, // Rome -> NYC
 ];
 
@@ -147,7 +147,7 @@ const FallbackEarth = () => (
 export default function DependencyGlobe() {
   return (
     <div className="absolute inset-0 w-full h-full z-0 bg-[#020410]">
-      <Canvas camera={{ position: [0, 0, 4.5], fov: 45 }} dpr={[1, 2]}>
+      <Canvas camera={{ position: [0, 0, 5.5], fov: 45 }} dpr={[1, 2]}> {/* position: [0, 0, 4.5] */}
         {/* Lumières minimales (Le globe s'éclaire lui-même maintenant) */}
         <ambientLight intensity={0.2} />
         
