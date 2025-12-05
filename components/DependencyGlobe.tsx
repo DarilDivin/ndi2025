@@ -5,13 +5,40 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars, QuadraticBezierLine } from '@react-three/drei';
 import * as THREE from 'three';
 
-// --- CONFIGURATION ---
+// --- CONFIGURATION : LE MONDE ENTIER VERS LES USA ---
+// Cible 1 : Virginie du Nord (Hub Data Centers mondial) -> [39.04, -77.48]
+// Cible 2 : Silicon Valley (Sièges GAFAM) -> [37.38, -122.08]
+
+const US_EAST = [39.04, -77.48];
+const US_WEST = [37.38, -122.08];
+
 const DATA_ARCS = [
-  { start: [48.85, 2.35], end: [38.90, -77.03] }, // Paris -> Washington
-  { start: [52.52, 13.40], end: [38.90, -77.03] }, // Berlin -> Washington
-  { start: [40.41, -3.70], end: [38.90, -77.03] }, // Madrid -> Washington
-//   { start: [51.50, -0.12], end: [37.77, -122.41] }, // Londres -> Silicon Valley
-  { start: [41.90, 12.49], end: [40.71, -74.00] }, // Rome -> NYC
+  // EUROPE (Vers East Coast)
+  { start: [48.85, 2.35], end: US_EAST },   // Paris
+  { start: [52.52, 13.40], end: US_EAST },  // Berlin
+  { start: [51.50, -0.12], end: US_EAST },  // Londres
+  { start: [41.90, 12.49], end: US_EAST },  // Rome
+  { start: [55.75, 37.61], end: US_EAST },  // Moscou
+
+  // ASIE (Vers West Coast)
+  { start: [35.67, 139.65], end: US_WEST }, // Tokyo
+  { start: [31.23, 121.47], end: US_WEST }, // Shanghai
+  { start: [19.07, 72.87], end: US_EAST },  // Mumbai (Route via Europe souvent, mais ici direct)
+  { start: [1.35, 103.81], end: US_WEST },  // Singapour
+  { start: [25.20, 55.27], end: US_EAST },  // Dubai
+
+  // AMÉRIQUE DU SUD (Vers East Coast)
+  { start: [-23.55, -46.63], end: US_EAST }, // São Paulo
+  { start: [-34.60, -58.38], end: US_EAST }, // Buenos Aires
+  { start: [4.71, -74.07], end: US_EAST },   // Bogota
+
+  // AFRIQUE (Vers East Coast)
+  { start: [30.04, 31.23], end: US_EAST },   // Le Caire
+  { start: [-33.92, 18.42], end: US_EAST },  // Le Cap
+  { start: [6.52, 3.37], end: US_EAST },     // Lagos
+
+  // OCÉANIE (Vers West Coast)
+  { start: [-33.86, 151.20], end: US_WEST }, // Sydney
 ];
 
 const getPosition = (lat: number, lon: number, radius: number) => {
@@ -23,21 +50,25 @@ const getPosition = (lat: number, lon: number, radius: number) => {
   return new THREE.Vector3(x, y, z);
 };
 
-// --- FLUX ANIMÉS AMÉLIORÉS ---
+// --- COMPOSANT LIGNE ANIMÉE ---
 const AnimatedDataArc = ({ start, end, radius = 2 }: { start: number[], end: number[], radius?: number }) => {
   const lineRef = useRef<any>(null);
 
   const { startPos, midPoint, endPos } = useMemo(() => {
     const s = getPosition(start[0], start[1], radius);
     const e = getPosition(end[0], end[1], radius);
-    // Courbure plus prononcée pour bien sortir du globe
-    const m = s.clone().add(e).multiplyScalar(0.5).normalize().multiplyScalar(radius * 1.6);
+    // On calcule la distance pour ajuster la hauteur de l'arc
+    const distance = s.distanceTo(e);
+    // Plus la distance est grande, plus l'arc monte haut
+    const midHeight = 1 + distance * 0.5; 
+    
+    const m = s.clone().add(e).multiplyScalar(0.5).normalize().multiplyScalar(radius * midHeight);
     return { startPos: s, midPoint: m, endPos: e };
   }, [start, end, radius]);
 
   useFrame((state, delta) => {
     if (lineRef.current && lineRef.current.material) {
-      // Vitesse augmentée pour effet "High Speed Data"
+      // Vitesse variable aléatoire pour un effet plus naturel
       lineRef.current.material.dashOffset -= delta * 1.5;
     }
   });
@@ -48,95 +79,79 @@ const AnimatedDataArc = ({ start, end, radius = 2 }: { start: number[], end: num
       start={startPos}
       mid={midPoint}
       end={endPos}
-      color="#22d3ee" // Cyan clair très lumineux
-      lineWidth={1.5} // Ligne fine
+      color="#38bdf8" // Cyan clair
+      lineWidth={1}   // Ligne très fine
       dashed={true}
-      dashScale={20} // Beaucoup de petits tirets
-      dashSize={0.4} // Taille du tiret
-      gapSize={0.2}  // Espace petit pour un effet continu
+      dashScale={15}
+      dashSize={0.5}
+      gapSize={0.5}
       transparent
-      opacity={0.8}
+      opacity={0.6}
     />
   );
 };
 
-// --- GLOBE AUTO-ILLUMINÉ ---
 const EarthContent = () => {
-  // Charge la texture
   const colorMap = useLoader(THREE.TextureLoader, '/earth-dark.jpg');
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame(() => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += 0.0003; // Rotation très lente et majestueuse
+      groupRef.current.rotation.y += 0.0005; // Rotation lente
     }
   });
 
   return (
     <group ref={groupRef}>
       
-      {/* 1. SURFACE DE L'OCÉAN (BASE SOMBRE) */}
+      {/* OCÉANS */}
       <mesh>
         <sphereGeometry args={[2, 64, 64]} />
-        <meshBasicMaterial color="#020617" /> {/* Noir profond, pas de reflets */}
+        <meshBasicMaterial color="#020617" />
       </mesh>
 
-      {/* 2. CONTINENTS (AUTO-LUMINEUX) */}
-      {/* On utilise la texture pour dire où afficher la couleur */}
+      {/* CONTINENTS LUMINEUX */}
       <mesh>
-        <sphereGeometry args={[2.005, 64, 64]} /> {/* Légèrement plus grand pour éviter le z-fighting */}
+        <sphereGeometry args={[2.005, 64, 64]} />
         <meshStandardMaterial
           map={colorMap}
           transparent={true}
-          opacity={0.9}
-          color="#1e293b" // Base bleu gris
-          emissive="#3b82f6" // Les continents émettent de la lumière bleue
-          emissiveIntensity={0.8} // Force de la lumière
-          emissiveMap={colorMap} // Seuls les continents brillent
-          blending={THREE.AdditiveBlending} // Effet "Hologramme"
-        />
-      </mesh>
-
-      {/* 3. ATMOSPHÈRE (HALO) */}
-      <mesh scale={[1.02, 1.02, 1.02]}>
-        <sphereGeometry args={[2, 64, 64]} />
-        <meshBasicMaterial
-          color="#60a5fa"
-          transparent
-          opacity={0.05}
-          side={THREE.BackSide}
+          opacity={0.8}
+          color="#1e293b"
+          emissive="#3b82f6"
+          emissiveIntensity={0.5}
+          emissiveMap={colorMap}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
 
-      {/* 4. FLUX DE DONNÉES */}
+      {/* FLUX GLOBAUX */}
       {DATA_ARCS.map((arc, i) => (
         <AnimatedDataArc key={`arc-${i}`} start={arc.start} end={arc.end} radius={2} />
       ))}
       
-      {/* 5. MARQUEURS DISCRETS (Sources Europe) */}
+      {/* SOURCES (Petits points blancs partout) */}
       {DATA_ARCS.map((arc, i) => (
         <mesh key={`dot-${i}`} position={getPosition(arc.start[0], arc.start[1], 2.01)}>
-          {/* Cercle minuscule */}
-          <sphereGeometry args={[0.015, 8, 8]} /> 
-          <meshBasicMaterial color="#ffffff" toneMapped={false} />
-          {/* Petit halo autour du point */}
-          <pointLight distance={0.2} intensity={0.5} color="white" />
+          <sphereGeometry args={[0.015, 8, 8]} />
+          <meshBasicMaterial color="white" />
         </mesh>
       ))}
 
-      {/* 6. MARQUEUR DISCRET (Destination USA) */}
-      <mesh position={getPosition(38.90, -77.03, 2.01)}>
-          <sphereGeometry args={[0.03, 16, 16]} />
-          <meshBasicMaterial color="#f472b6" toneMapped={false} />
-          <pointLight distance={0.5} intensity={1} color="#f472b6" />
-      </mesh>
+      {/* CIBLES USA (Gros points Rouges qui pulsent) */}
+      {[US_EAST, US_WEST].map((target, i) => (
+        <mesh key={`target-${i}`} position={getPosition(target[0], target[1], 2.01)}>
+          <sphereGeometry args={[0.04, 16, 16]} />
+          <meshBasicMaterial color="#f43f5e" toneMapped={false} />
+          <pointLight distance={0.5} intensity={2} color="#f43f5e" />
+        </mesh>
+      ))}
 
     </group>
   );
 };
 
-// --- FALLBACK (Si pas d'image) ---
+// Fallback si l'image ne charge pas
 const FallbackEarth = () => (
   <mesh>
     <sphereGeometry args={[2, 32, 32]} />
@@ -147,23 +162,13 @@ const FallbackEarth = () => (
 export default function DependencyGlobe() {
   return (
     <div className="absolute inset-0 w-full h-full z-0 bg-[#020410]">
-      <Canvas camera={{ position: [0, 0, 5.5], fov: 45 }} dpr={[1, 2]}> {/* position: [0, 0, 4.5] */}
-        {/* Lumières minimales (Le globe s'éclaire lui-même maintenant) */}
+      <Canvas camera={{ position: [0, 0, 5.8], fov: 45 }} dpr={[1, 2]}>
         <ambientLight intensity={0.2} />
-        
-        {/* Étoiles en fond */}
-        <Stars radius={200} depth={50} count={2000} factor={4} fade speed={0.5} />
-        
+        <Stars radius={200} depth={50} count={3000} factor={4} fade speed={0.5} />
         <Suspense fallback={<FallbackEarth />}>
           <EarthContent />
         </Suspense>
-        
-        <OrbitControls 
-          enableZoom={false} 
-          enablePan={false} 
-          minPolarAngle={Math.PI / 3} 
-          maxPolarAngle={Math.PI / 1.5}
-        />
+        <OrbitControls enableZoom={false} enablePan={false} autoRotate={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 1.5} />
       </Canvas>
     </div>
   );

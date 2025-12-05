@@ -1,8 +1,11 @@
 'use client';
 
-import QuizSection from '@/components/QuizSection';
-import StoryScroller from '@/components/StoryScroller';
 import dynamic from 'next/dynamic';
+import Header from '@/components/Header'; // <-- Import Header
+import Footer from '@/components/Footer'; // <-- Import Footer
+import CompareScenario from '@/components/CompareScenario';
+import DynamicTextReveal from '@/components/DynamicTextReveal';
+import QuizSection from '@/components/QuizSection';
 
 // Import dynamique pour éviter les erreurs SSR avec Three.js
 const DependencyGlobe = dynamic(
@@ -11,8 +14,18 @@ const DependencyGlobe = dynamic(
 );
 
 export default function Home() {
+  const scrollDown = () => {
+    const element = document.getElementById('constat');
+    element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div>
+    <div className="bg-[#020410] text-white">
+      
+      {/* HEADER FIXE */}
+      <Header />
+
+      {/* --- HERO SECTION --- */}
       <div className="relative h-screen w-full bg-[#020410] overflow-hidden">
         {/* COUCHE 1 - Le Globe (arrière-plan) */}
         <div className="absolute inset-0 z-0">
@@ -21,6 +34,7 @@ export default function Home() {
 
         {/* COUCHE 2 - Le Texte Hero (overlay) */}
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4">
+          
           {/* Badge supérieur */}
           <div className="mb-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
             <span className="text-sm text-blue-400 font-medium tracking-wide">
@@ -51,25 +65,17 @@ export default function Home() {
             <div className="h-px w-12 bg-red-400/50" />
           </div>
 
-          {/* Bouton CTA - pointer-events-auto pour réactiver le clic */}
-          <button className="pointer-events-auto group relative px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white font-semibold transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:scale-105 active:scale-95">
+          {/* Bouton CTA */}
+          <button 
+            onClick={scrollDown}
+            className="pointer-events-auto group relative px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white font-semibold transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:scale-105 active:scale-95"
+          >
             <span className="relative z-10 flex items-center gap-2">
               DÉCOUVRIR L&apos;ALTERNATIVE
-              <svg
-                className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
+              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </span>
-            {/* Glow effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
@@ -84,13 +90,25 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="relative z-20">
-        <StoryScroller />
+
+      {/* --- SCROLLYTELLING (Le Constat) --- */}
+      <div id="constat" className="relative z-20">
+        <DynamicTextReveal />
       </div>
-      {/* Quiz */}
-      <div className="relative z-30">
+
+      {/* --- COMPARE SCENARIO (La Réalité) --- */}
+      <div id="realite" className="relative z-30 bg-[#020410]">
+         <CompareScenario />
+      </div>
+
+      {/* --- QUIZ (Agir) --- */}
+      <div id="agir" className="relative z-30">
          <QuizSection />
       </div>
+
+      {/* FOOTER */}
+      <Footer />
+      
     </div>
   );
 }

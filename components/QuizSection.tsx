@@ -53,6 +53,11 @@ export default function QuizSection() {
 
   return (
     <section className="relative min-h-screen w-full bg-[#020410] text-white flex flex-col items-center justify-center p-4">
+
+      <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 drop-shadow-lg">
+        Quiz Interactif
+      </h1>
+
       
       {/* Fond décoratif subtil */}
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-[#020410] to-[#020410] pointer-events-none"></div>
