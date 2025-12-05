@@ -21,7 +21,7 @@ export default function Header() {
           className="font-bold text-white tracking-widest cursor-pointer select-none flex items-center gap-2"
         >
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          NIRD_2025
+          NUMHEROIQUE
         </div>
 
         {/* LIENS (Masqués sur mobile très petit) */}
@@ -36,7 +36,7 @@ export default function Header() {
 
         {/* CTA CODE SOURCE */}
         <a 
-          href="https://gitlab.com" // Mets ton lien git ici
+          href="https://github.com/DarilDivin/ndi2025.git"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-xs font-mono text-emerald-400 hover:text-emerald-300 transition-colors"
